@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Writing — Your Name</title>
+<meta name="description" content="Notes on backend systems, distributed architecture, AI, interviews, and life." />
+<link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<div class="bg-grid"></div>
+<div class="glow a"></div>
+<div class="glow b"></div>
+<div id="cursor"></div>
+
+<div class="subnav">
+  <a class="brand" href="index.html">YOURNAME</a>
+  <div class="nav-links">
+    <a href="index.html#work">WORK</a>
+    <a href="index.html#experience">EXPERIENCE</a>
+    <a href="blog.html">WRITING</a>
+    <a href="index.html#contact">CONTACT</a>
+  </div>
+</div>
+
+<section class="page-head">
+  <div class="wrap">
+    <div class="eyebrow">Writing</div>
+    <h1>Notes &amp;<br>experiments.</h1>
+    <p>Tech deep-dives, interview experiences, and the occasional note on life. Filter by category below.</p>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="tabs" id="tabs"></div>
+    <div class="post-list" id="list"></div>
+  </div>
+</section>
+
+<footer class="wrap" style="border:none;margin-top:80px">
+  <span>© 2026 YOUR NAME</span>
+  <span><a href="index.html">← BACK HOME</a></span>
+</footer>
+
+<script src="posts.js"></script>
+<script>
+  var cur=document.getElementById('cursor');
+  window.addEventListener('mousemove',function(e){cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
+  function bindCursor(){
+    document.querySelectorAll('a,.tab').forEach(function(el){
+      if(el.__c)return;el.__c=1;
+      el.addEventListener('mouseenter',function(){cur.style.transform='translate(-50%,-50%) scale(3.2)';cur.style.opacity='.5';});
+      el.addEventListener('mouseleave',function(){cur.style.transform='translate(-50%,-50%) scale(1)';cur.style.opacity='1';});
+    });
+  }
+
+  function fmt(d){
+    var p=d.split('-');var m=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    return m[parseInt(p[1],10)-1]+" "+parseInt(p[2],10)+", "+p[0];
+  }
+
+  var posts=(window.POSTS||[]).slice().sort(function(a,b){return a.date<b.date?1:-1;});
+
+  // Build category list (preserve first-seen order), with "All" first
+  var cats=[];
+  posts.forEach(function(p){var c=p.category||"Uncategorized";if(cats.indexOf(c)<0)cats.push(c);});
+  var tabsEl=document.getElementById('tabs');
+  var listEl=document.getElementById('list');
+  var active="All";
+
+  function readHash(){
+    var h=decodeURIComponent((location.hash||"").replace('#',''));
+    if(h && (h==="All"||cats.indexOf(h)>=0)) active=h;
+  }
+
+  function renderTabs(){
+    tabsEl.innerHTML="";
+    ["All"].concat(cats).forEach(function(c){
+      var b=document.createElement('button');
+      b.className='tab'+(c===active?' on':'');
+      b.textContent=c==="All"?"All":c;
+      var n=c==="All"?posts.length:posts.filter(function(p){return (p.category||"Uncategorized")===c;}).length;
+      b.innerHTML=b.textContent+' <i>'+n+'</i>';
+      b.onclick=function(){active=c;location.hash=encodeURIComponent(c);renderTabs();renderList();};
+      tabsEl.appendChild(b);
+    });
+    bindCursor();
+  }
+
+  function renderList(){
+    var shown=active==="All"?posts:posts.filter(function(p){return (p.category||"Uncategorized")===active;});
+    if(!shown.length){listEl.innerHTML='<div class="empty">No posts here yet.</div>';return;}
+    listEl.innerHTML="";
+    shown.forEach(function(p){
+      var a=document.createElement('a');
+      a.className='post-item';
+      a.href='post.html?id='+encodeURIComponent(p.slug);
+      a.innerHTML=
+        '<div class="post-date">'+fmt(p.date)+'</div>'+
+        '<div class="post-info"><span class="post-cat">'+(p.category||"")+'</span>'+
+          '<h3>'+p.title+'</h3><p>'+(p.summary||'')+'</p>'+
+          '<div class="tags">'+(p.tags||[]).map(function(t){return '<span class="tag">'+t+'</span>';}).join('')+'</div></div>'+
+        '<div class="post-arrow">READ →</div>';
+      listEl.appendChild(a);
+    });
+    bindCursor();
+  }
+
+  if(!posts.length){
+    tabsEl.style.display='none';
+    listEl.innerHTML='<div class="empty">No posts yet. Add one in posts.js.</div>';
+  } else {
+    readHash();
+    renderTabs();
+    renderList();
+  }
+  window.addEventListener('hashchange',function(){readHash();renderTabs();renderList();});
+</script>
+</body>
+</html>
