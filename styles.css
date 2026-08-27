@@ -173,7 +173,7 @@ body.ready .hero-title .ln > span{transform:none}
 .proj-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}
 @media(max-width:760px){.proj-grid{grid-template-columns:1fr}}
 .proj{border:1px solid var(--line);border-radius:16px;padding:30px;background:var(--panel);position:relative;overflow:hidden;transition:.4s;min-height:230px;display:flex;flex-direction:column}
-.proj::after{content:"";position:absolute;inset:0;background:radial-gradient(400px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.08),transparent 60%);opacity:0;transition:opacity .4s}
+.proj::after{content:"";position:absolute;inset:0;background:radial-gradient(400px circle at var(--mx,50%) var(--my,0%),rgba(255,255,255,.08),transparent 60%);opacity:0;transition:opacity .4s;pointer-events:none}
 .proj:hover{border-color:var(--line-strong);transform:translateY(-4px)}
 .proj:hover::after{opacity:1}
 .proj-no{font-family:var(--mono);font-size:11px;color:var(--faint);letter-spacing:.2em}
