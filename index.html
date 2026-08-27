@@ -56,7 +56,7 @@
       </div>
       <div class="hero-id">
         <div class="hero-photo">
-          <img src="assets/hero-photo.jpg" alt="Sudheendra Sabnavisu" width="440" height="500" decoding="async" />
+          <img src="assets/hero-photo.jpg" alt="Sudheendra Sabnavisu" width="440" height="500" fetchpriority="high" decoding="async" />
         </div>
         <h1 class="hero-title">
           <span class="ln"><span>SUDHEENDRA</span></span>
@@ -477,20 +477,33 @@
   <script src="posts.js"></script>
   <script>
     // ---- Loader ----
+    // The bar tracks elapsed time against a hard cap rather than inventing random
+    // progress, and it hands the page over the moment the page is actually ready.
+    // MIN keeps the animation readable; MAX is the longest it may ever hold content back.
     (function () {
       var pct = document.getElementById('pct'), bar = document.getElementById('bar'),
-        loader = document.getElementById('loader'), n = 0;
-      var t = setInterval(function () {
-        n += Math.random() * 16; if (n >= 100) { n = 100; clearInterval(t); finish(); }
-        pct.textContent = Math.floor(n); bar.style.width = n + '%';
-      }, 120);
-      function finish() {
-        setTimeout(function () {
-          loader.classList.add('done');
-          document.body.classList.remove('loading');
-          document.body.classList.add('ready');
-        }, 350);
+        loader = document.getElementById('loader'), done = false, loaded = false;
+      var MIN = 350, MAX = 900, start = performance.now();
+
+      function reveal() {
+        if (done) return;
+        done = true; clearInterval(t);
+        pct.textContent = '100'; bar.style.width = '100%';
+        loader.classList.add('done');
+        document.body.classList.remove('loading');
+        document.body.classList.add('ready');
       }
+
+      var t = setInterval(function () {
+        var e = performance.now() - start;
+        var n = Math.min(100, e / MAX * 100);
+        pct.textContent = Math.floor(n); bar.style.width = n + '%';
+        if ((loaded && e >= MIN) || e >= MAX) reveal();
+      }, 50);
+
+      function onLoad() { loaded = true; }
+      if (document.readyState === 'complete') onLoad();
+      else window.addEventListener('load', onLoad);
     })();
 
     // ---- Latest posts on homepage ----
@@ -526,6 +539,17 @@
       es.forEach(function (e) { if (e.isIntersecting) { e.target.classList.add('in'); io.unobserve(e.target); } });
     }, { threshold: .12 });
     document.querySelectorAll('.reveal').forEach(function (el) { io.observe(el); });
+
+    // ---- Pause the marquee while it is off-screen ----
+    // It is a ~4600px-wide composited layer animating on an infinite loop; leaving it
+    // running while scrolled past keeps the GPU awake for something nobody can see.
+    (function () {
+      var track = document.querySelector('.marquee-track');
+      if (!track) return;
+      new IntersectionObserver(function (es) {
+        track.classList.toggle('paused', !es[0].isIntersecting);
+      }).observe(track.parentNode);
+    })();
 
     // ---- Cursor ----
     var cur = document.getElementById('cursor');
